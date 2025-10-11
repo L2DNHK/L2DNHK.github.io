@@ -1,10 +1,258 @@
-<!DOCTYPE html>
-<html>
-    <head>
+<!DOCTYPE html> <html lang="ko"> <head> <meta charset="utf-8"> <title>Tomica Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style> :root { --card-w: 300px; --brand: #d7263d; --bg: #f6f7f9; --text: #23262a; --muted: #666b73; --border: #e1e4e8; --radius: 16px; } * { box-sizing: border-box; } body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%); color: var(--text); } .store { max-width: 1200px; margin: 32px auto; padding: 0 16px; } .store-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; } .store-title { font-size: 28px; font-weight: 800; letter-spacing: -0.3px; } .store-sub { font-size: 14px; color: var(--muted); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-w), 1fr));
+    gap: 20px;
+  }
 
-    </head>
-    <body>
-        <h1>L2·LSDAS.co</h1>
-        <h2>Welcome to my store</h2>
-    </body>
-</html>
+  .product {
+    background: #fff;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    transition: transform .2s ease, box-shadow .2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .product:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+  }
+
+  .product-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #e9ecef;
+    overflow: hidden;
+  }
+  .product-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .product-media.no-image::after {
+    content: "이미지 준비 중";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #8a8f97;
+    font-size: 14px;
+  }
+
+  .product-body {
+    padding: 14px 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .product-name {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .product-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .meta-dot {
+    width: 4px;
+    height: 4px;
+    background: #c7ccd3;
+    border-radius: 50%;
+  }
+  .badge {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #444b52;
+    background: #f7f8fa;
+  }
+  .product-price {
+    font-size: 18px;
+    font-weight: 800;
+    color: --brand;
+    color: var(--brand);
+    margin-top: 2px;
+  }
+  .product-desc {
+    font-size: 14px;
+    color: #50555c;
+    line-height: 1.55;
+  }
+
+  .product-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .btn {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background .15s ease, border-color .15s ease, filter .15s ease;
+    user-select: none;
+  }
+  .btn:hover { background: #f3f5f7; }
+  .btn-primary {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: #fff;
+  }
+  .btn-primary:hover { filter: brightness(0.95); }
+
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: .55;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+</style>
+
+</head> <body> <main class="store">
+    <div class="store-header">
+        <div class="store-title">L2DNH's diecast dealership</div>
+        <div class="store-sub" id="storeSub">총 0개 상품</div></div>
+  <section class="grid" id="productGrid">
+    <!-- 스크립트가 상품 카드를 자동으로 채웁니다 -->
+  </section>
+</main>
+
+<script>
+  /*
+   상품 구조체(객체)
+   image: 이미지 경로(문자열)
+   name: 제품명(문자열)
+   price: 가격(숫자, KRW)
+   scale: 비율(문자열, 예: "1:62")
+   description: 상세 설명(문자열)
+   buyUrl: 구매처 링크(문자열)
+   category 또는 catagory: 카테고리(브랜드 등, 문자열)
+   quantity: 수량 표기(문자열, "n/m" 형식)
+  */
+  const products = [
+    {
+      image: "images/ferrarif40.jpg",
+      name: "Ferrari F40",
+      price: 15000,
+      scale: "1:62",
+      description: "토미카 프리미엄 no.31 페라리 F40 (Ferrari F40) 입니다. 미개봉 상태로 보관된 제품입니다. 상세 사진 확인 및 구매는 구매 페이지에서 가능합니다.",
+      buyUrl: "https://m.bunjang.co.kr/products/362013104",
+      category: "Tomica Premium",
+      quantity: "5/5"
+    },
+  ];
+
+  function formatKRW(n) {
+    try { return n.toLocaleString("ko-KR") + " KRW"; }
+    catch { return n + " KRW"; }
+  }
+
+  function createProductCard(product) {
+    const card = document.createElement("div");
+    card.className = "product";
+
+    const media = document.createElement("div");
+    media.className = "product-media";
+    const img = document.createElement("img");
+    img.src = product.image;
+    img.alt = product.name;
+    img.addEventListener("error", () => {
+      media.classList.add("no-image");
+      img.remove();
+    });
+    media.appendChild(img);
+
+    const body = document.createElement("div");
+    body.className = "product-body";
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "product-name";
+    nameEl.textContent = product.name;
+
+    const meta = document.createElement("div");
+    meta.className = "product-meta";
+
+    const scaleEl = document.createElement("span");
+    scaleEl.textContent = `Scale ${product.scale}`;
+
+    const dot1 = document.createElement("span");
+    dot1.className = "meta-dot";
+
+    const brandEl = document.createElement("span");
+    const categoryValue = product.category ?? product.catagory ?? "Tomica";
+    brandEl.textContent = categoryValue;
+
+    // 수량 배지
+    const qtyBadge = document.createElement("span");
+    qtyBadge.className = "badge";
+    qtyBadge.textContent = `수량 ${product.quantity ?? "-"}`;
+
+    meta.append(scaleEl, dot1, brandEl, qtyBadge);
+
+    const priceEl = document.createElement("div");
+    priceEl.className = "product-price";
+    priceEl.textContent = formatKRW(product.price);
+
+    const descEl = document.createElement("div");
+    descEl.className = "product-desc";
+    descEl.textContent = product.description;
+    descEl.hidden = true; // 기본은 접힘
+
+    const actions = document.createElement("div");
+    actions.className = "product-actions";
+
+    const buyLink = document.createElement("a");
+    buyLink.className = "btn btn-primary";
+    buyLink.textContent = "구매하러 가기";
+    buyLink.href = product.buyUrl || "#";
+    buyLink.target = "_blank";
+    buyLink.rel = "noopener noreferrer";
+    if (!product.buyUrl) buyLink.setAttribute("aria-disabled", "true");
+
+    const btnDetail = document.createElement("button");
+    btnDetail.className = "btn";
+    btnDetail.type = "button";
+    btnDetail.setAttribute("aria-expanded", "false");
+    btnDetail.textContent = "자세히 보기";
+    btnDetail.addEventListener("click", () => {
+      const expanded = btnDetail.getAttribute("aria-expanded") === "true";
+      btnDetail.setAttribute("aria-expanded", String(!expanded));
+      descEl.hidden = expanded;
+      btnDetail.textContent = expanded ? "자세히 보기" : "간단히 보기";
+    });
+
+    actions.append(buyLink, btnDetail);
+
+    body.append(nameEl, meta, priceEl, descEl, actions);
+    card.append(media, body);
+    return card;
+  }
+
+  function renderProducts(list) {
+    const grid = document.getElementById("productGrid");
+    grid.innerHTML = "";
+    list.forEach(p => grid.appendChild(createProductCard(p)));
+    document.getElementById("storeSub").textContent = `총 ${list.length}개 상품`;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderProducts(products);
+  });
+</script>
+
+</body> </html>
